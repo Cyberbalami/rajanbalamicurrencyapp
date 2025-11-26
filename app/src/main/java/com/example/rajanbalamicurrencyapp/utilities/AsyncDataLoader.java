@@ -2,32 +2,55 @@ package com.example.rajanbalamicurrencyapp.utilities;
 
 import android.os.AsyncTask;
 
-import com.example.rajanbalamicurrencyapp.MainActivity;
 import com.example.rajanbalamicurrencyapp.parsers.JsonParser;
 
-import java.util.ArrayList;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Map;
 
-public class AsyncDataLoader extends AsyncTask<String, Void, ArrayList<String>> {
+public class AsyncDataLoader extends AsyncTask<String, Void, Map<String, Double>> {
 
-    private MainActivity activity;
+    public interface Listener {
+        void onDataLoaded(Map<String, Double> data);
+    }
 
-    public AsyncDataLoader(MainActivity activity) {
-        this.activity = activity;
+    private Listener listener;
+
+    public AsyncDataLoader(Listener listener) {
+        this.listener = listener;
     }
 
     @Override
-    protected ArrayList<String> doInBackground(String... params) {
+    protected Map<String, Double> doInBackground(String... params) {
         try {
-            String json = ApiDataReader.getValuesFromApi(params[0]);
-            return JsonParser.parseRates(json);
+            URL url = new URL(params[0]);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.connect();
+
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(conn.getInputStream())
+            );
+
+            StringBuilder builder = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                builder.append(line);
+            }
+
+            return JsonParser.parseRates(builder.toString());
+
         } catch (Exception ex) {
             ex.printStackTrace();
-            return new ArrayList<>();
+            return null;
         }
     }
 
     @Override
-    protected void onPostExecute(ArrayList<String> result) {
-        activity.updateRates(result);
+    protected void onPostExecute(Map<String, Double> result) {
+        if (listener != null && result != null) {
+            listener.onDataLoaded(result);
+        }
     }
 }

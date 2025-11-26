@@ -1,35 +1,34 @@
 package com.example.rajanbalamicurrencyapp.utilities;
 
 import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class ApiDataReader {
 
-    public static String getValuesFromApi(String urlString) throws Exception {
-
+    public static String readUrl(String urlString) throws IOException {
         URL url = new URL(urlString);
+
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
 
-        connection.setConnectTimeout(10000);
-        connection.setReadTimeout(10000);
-        connection.connect();
+        InputStream inputStream = connection.getInputStream();
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
 
-        BufferedReader reader = new BufferedReader(
-                new InputStreamReader(connection.getInputStream())
-        );
-
-        StringBuilder response = new StringBuilder();
+        StringBuilder result = new StringBuilder();
         String line;
 
-        while ((line = reader.readLine()) != null) {
-            response.append(line);
+        while ((line = bufferedReader.readLine()) != null) {
+            result.append(line);
         }
 
-        reader.close();
+        bufferedReader.close();
+        inputStream.close();
         connection.disconnect();
 
-        return response.toString();
+        return result.toString();
     }
 }

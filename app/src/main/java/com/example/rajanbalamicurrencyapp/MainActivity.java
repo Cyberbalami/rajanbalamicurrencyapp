@@ -1,52 +1,67 @@
 package com.example.rajanbalamicurrencyapp;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.widget.ArrayAdapter;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
-import android.widget.ListView;
+import android.widget.Toast;
 
 import com.example.rajanbalamicurrencyapp.utilities.AsyncDataLoader;
-import com.example.rajanbalamicurrencyapp.utilities.Constants;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    private ListView listViewRates;
-    private EditText edtFilter;
-
-    private ArrayList<String> rateList = new ArrayList<>();
-    private ArrayAdapter<String> adapter;
+    EditText inputCurrency;
+    RecyclerView recyclerView;
+    RatesAdapter adapter;
+    List<String> displayList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        listViewRates = findViewById(R.id.listViewRates);
-        edtFilter = findViewById(R.id.edtFilter);
+        inputCurrency = findViewById(R.id.inputCurrency);
+        recyclerView = findViewById(R.id.recyclerView);
 
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, rateList);
-        listViewRates.setAdapter(adapter);
+        adapter = new RatesAdapter(displayList);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(adapter);
 
-        new AsyncDataLoader(this).execute(Constants.API_URL);
+        inputCurrency.setOnEditorActionListener((textView, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                String userInput = inputCurrency.getText().toString().trim().toUpperCase();
 
-        edtFilter.addTextChangedListener(new TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-                adapter.getFilter().filter(s);
+                if (userInput.isEmpty()) {
+                    Toast.makeText(this, "Enter a currency!", Toast.LENGTH_SHORT).show();
+                } else {
+
+                    // *********** FIXED *************
+                    String url = "https://api.exchangerate-api.com/v4/latest/" + userInput;
+
+                    new AsyncDataLoader(data -> {
+                        displayList.clear();
+
+                        if (data == null) {
+                            displayList.add("Error loading data!");
+                        } else {
+                            for (String key : data.keySet()) {
+                                displayList.add(key + " = " + data.get(key));
+                            }
+                        }
+
+                        adapter.notifyDataSetChanged();
+                    }).execute(url);  // now we send the REAL URL
+                }
+                return true;
             }
-            @Override public void afterTextChanged(Editable s) {}
+            return false;
         });
-    }
-
-    public void updateRates(ArrayList<String> rates) {
-        rateList.clear();
-        rateList.addAll(rates);
-        adapter.notifyDataSetChanged();
     }
 }

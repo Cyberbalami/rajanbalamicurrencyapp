@@ -1,27 +1,24 @@
 package com.example.rajanbalamicurrencyapp.parsers;
 
 import org.json.JSONObject;
-
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 public class JsonParser {
 
-    public static ArrayList<String> parseRates(String jsonString) throws Exception {
-        ArrayList<String> list = new ArrayList<>();
-
+    public static Map<String, Double> parseRates(String jsonString) throws Exception {
         JSONObject root = new JSONObject(jsonString);
         JSONObject rates = root.getJSONObject("rates");
 
-        Iterator<String> keys = rates.keys();
+        Map<String, Double> map = new HashMap<>();
 
+        Iterator<String> keys = rates.keys();
         while (keys.hasNext()) {
             String currency = keys.next();
             double value = rates.getDouble(currency);
-
-            list.add(currency + " – " + value);
+            map.put(currency, value);
         }
-
-        return list;
+        return map;
     }
 }

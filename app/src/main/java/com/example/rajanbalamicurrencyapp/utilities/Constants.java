@@ -1,5 +1,5 @@
 package com.example.rajanbalamicurrencyapp.utilities;
 
 public class Constants {
-    public static final String API_URL = "https://api.exchangerate.host/latest?base=USD";
+    public static final String BASE_URL = "https://open.er-api.com/v6/latest/";
 }

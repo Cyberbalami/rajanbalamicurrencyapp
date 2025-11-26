@@ -6,15 +6,17 @@
     android:padding="16dp">
 
     <EditText
-        android:id="@+id/edtFilter"
+        android:id="@+id/inputCurrency"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Enter currency (e.g. USD)"
-        android:inputType="text"/>
+        android:imeOptions="actionDone"
+        android:inputType="text" />
 
-    <ListView
-        android:id="@+id/listViewRates"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp" />
 
 </LinearLayout>
